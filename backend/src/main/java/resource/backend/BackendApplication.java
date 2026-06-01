@@ -7,9 +7,6 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 public class BackendApplication {
 
 	public static void main(String[] args) {
-		// Load .env variables before Spring Boot starts!
-		EnvLoader.loadEnvVars();
-
 		SpringApplication.run(BackendApplication.class, args);
 	}
 
