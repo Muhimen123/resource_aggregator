@@ -88,21 +88,21 @@ public class GoogleOAuthController {
         // =====================================================================
         // 🔥 JIT PROVISIONING STEP: Resolves PostgreSQL foreign key constraint
         // =====================================================================
-        if (!userRepository.existsById(userId)) {
-            System.out.println("[OAuth Sync] User row missing due to front-end async timing. Provisioning record for auth_id: " + userId);
+        if (userRepository.findByAuthId(userId).isEmpty()) {
+            System.out.println("[OAuth Sync] User record completely missing. Safe provision execution triggered for: " + userId);
 
             String fallbackName = "user_" + userIdStr.substring(0, 8);
 
             User fallbackUser = new User();
-            // 1. Link to Supabase using the correct authId field
-            fallbackUser.setAuthId(userId);
+            // Assign the incoming UUID to BOTH identifiers to ensure database consistency
+            fallbackUser.setId(userId);     // Sets the primary key inherited from BaseEntity
+            fallbackUser.setAuthId(userId); // Sets your application unique auth column link
 
-            // 2. Set mandatory required properties (nullable = false)
+            // Populate non-nullable database constraints
             fallbackUser.setUsername(fallbackName);
-            fallbackUser.setDisplayName(fallbackName); // Maps to required displayName
-            fallbackUser.setRewardPoints(0);           // Matches default initialization
+            fallbackUser.setDisplayName(fallbackName);
+            fallbackUser.setRewardPoints(0);
 
-            // 3. Save to database using your schema constraints
             userRepository.save(fallbackUser);
         }
         // =====================================================================

@@ -7,7 +7,7 @@ import HomePageTopBar from "../components/HomePageTopBar";
 export default function HomepagePage() {
     const router = useRouter();
     
-    // 🔥 FIX: Manage dynamic User ID from your storage instead of hardcoding a demo key
+    // Manage dynamic User ID from storage instead of hardcoding a demo key
     const [userId, setUserId] = useState<string | null>(null);
     const [rooms, setRooms] = useState<{ id: string; name: string }[]>([]);
 
@@ -56,7 +56,14 @@ export default function HomepagePage() {
         setIsCreateModalOpen(true);
     };
 
-    // 🔥 FIX: ACTIVE LOGOUT ACTION FLOW ROUTINE
+    // 🔥 NEW: Trigger Google Drive Authorization Lifecycle Link Flow
+    const handleConnectGoogleDrive = () => {
+        if (!userId) return;
+        // Triggers your Spring Boot Google OAuth Gateway using the dynamic state userId
+        window.location.href = `http://localhost:8080/api/v1/oauth/connect?userId=${userId}`;
+    };
+
+    // ACTIVE LOGOUT ACTION FLOW ROUTINE
     const handleLogout = async () => {
         const token = localStorage.getItem("supabase_token");
 
@@ -148,6 +155,13 @@ export default function HomepagePage() {
                     <div className="rpg-wood-btn-wrap">
                         <button className="rpg-wood-btn" onClick={handleCreateNew}>
                             Create New Room
+                        </button>
+                    </div>
+
+                    {/* 🔥 NEW: Google Drive Link Option */}
+                    <div className="rpg-wood-btn-wrap">
+                        <button className="rpg-wood-btn text-emerald-400" onClick={handleConnectGoogleDrive}>
+                            Connect Drive
                         </button>
                     </div>
 
