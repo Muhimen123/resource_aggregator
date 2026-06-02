@@ -13,9 +13,9 @@
   justify-content: center;
   cursor: pointer;
   z-index: 90;
-  box-shadow: 
-    0 4px 10px rgba(0,0,0,0.5),
-    inset 0 0 8px rgba(206,168,100,0.3);
+  box-shadow:
+    0 4px 10px rgba(0, 0, 0, 0.5),
+    inset 0 0 8px rgba(206, 168, 100, 0.3);
   transition: all 0.2s ease;
 }
 
@@ -37,7 +37,8 @@
   right: 0;
   height: 100vh;
   width: 440px;
-  background: #E8C493; /* Gold parchment theme */
+  background: #E8C493;
+  /* Gold parchment theme */
   border-left: 5px solid #3c2d1d;
   box-shadow: -10px 0 35px rgba(0, 0, 0, 0.7);
   z-index: 95;
@@ -102,7 +103,7 @@
   height: 58px;
   object-fit: contain;
   image-rendering: pixelated;
-  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
 }
 
 .rpg-sidebar-title {
@@ -145,9 +146,9 @@
   border: 3px solid #2B331A;
   border-radius: 12px;
   padding: 16px 20px 16px 44px;
-  box-shadow: 
-    0 4px 8px rgba(0,0,0,0.15),
-    inset 0 0 10px rgba(0,0,0,0.05);
+  box-shadow:
+    0 4px 8px rgba(0, 0, 0, 0.15),
+    inset 0 0 10px rgba(0, 0, 0, 0.05);
 }
 
 .event-card-quest-icon {
@@ -157,12 +158,12 @@
   width: 48px;
   height: 48px;
   image-rendering: pixelated;
-  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
 }
 
 .event-card-details {
   font-family: 'Press Start 2P', monospace;
-  font-size: 13px;
+  font-size: 10px;
   color: #2B331A;
   line-height: 1.8;
 }
@@ -205,7 +206,7 @@
   padding: 4px 16px;
   margin-bottom: 24px;
   gap: 10px;
-  box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .rpg-search-icon {
@@ -216,7 +217,7 @@
 
 .rpg-search-input {
   font-family: 'Press Start 2P', monospace;
-  font-size: 12px;
+  font-size: 10px;
   background: none;
   border: none;
   color: #2B331A;
@@ -244,7 +245,7 @@
 }
 
 .all-events-scroll::-webkit-scrollbar-track {
-  background: rgba(0,0,0,0.05);
+  background: rgba(0, 0, 0, 0.05);
 }
 
 .all-events-scroll::-webkit-scrollbar-thumb {
@@ -275,20 +276,22 @@
 
 /* Trash Icon Button - Stable alignment layout */
 .rpg-trash-btn {
-  background: none;    
-  border: none;        
-  padding: 0;          
-  
+  background: none;
+  border: none;
+  padding: 0;
+
   /* MINIMAL CHANGES HERE */
-  width: 70px;         /* Changed from 100px to 70px to match height */
-  height: 70px;        
-  flex-shrink: 0;      /* Added to prevent the flex row from squeezing the button */
-  
+  width: 70px;
+  /* Changed from 100px to 70px to match height */
+  height: 70px;
+  flex-shrink: 0;
+  /* Added to prevent the flex row from squeezing the button */
+
   display: inline-flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  outline: none;       
+  outline: none;
   transition: transform 80ms, filter 80ms;
 }
 
@@ -298,7 +301,7 @@
   height: 100%;
   object-fit: contain;
   image-rendering: pixelated;
-  filter: drop-shadow(0 2px 2px rgba(0,0,0,0.3)) brightness(2);
+  filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.3)) brightness(2);
 }
 
 /* Hover effects applied to the whole button wrapper */
@@ -336,7 +339,7 @@
 
 .rpg-form-select {
   font-family: 'Press Start 2P', monospace;
-  font-size: 13px;
+  font-size: 10px;
   background: #f1ddbf;
   border: 3px solid #2B331A;
   border-radius: 6px;
@@ -368,7 +371,7 @@
   justify-content: center;
   cursor: pointer;
   padding: 0;
-  box-shadow: 0 3px 6px rgba(0,0,0,0.3);
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.3);
   transition: transform 80ms, filter 80ms;
   flex-shrink: 0;
 }
@@ -377,7 +380,7 @@
   width: 20px;
   height: auto;
   image-rendering: pixelated;
-  filter: drop-shadow(0 2px 2px rgba(0,0,0,0.3));
+  filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.3));
 }
 
 .rpg-plus-btn:hover {
@@ -386,5 +389,144 @@
 }
 
 .rpg-plus-btn:active {
+  transform: translateY(2px);
+}
+
+/* AI Chat Dual Box */
+.rpg-chat-box {
+  border: 3px solid #2B331A;
+  background: #c5a67c;
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  overflow: hidden;
+  margin-bottom: 24px;
+  box-shadow: inset 0 2px 8px rgba(0,0,0,0.15);
+}
+
+.rpg-chat-history {
+  flex: 1;
+  padding: 16px;
+  overflow-y: auto;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 10px;
+  color: #2B331A;
+  line-height: 1.6;
+  border-bottom: 3px solid #2B331A;
+  text-align: left;
+}
+
+.rpg-chat-input-area {
+  height: 120px;
+  padding: 12px 16px;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 10px;
+  background: none;
+  border: none;
+  color: #2B331A;
+  resize: none;
+  outline: none;
+  line-height: 1.6;
+}
+
+.rpg-chat-input-area::placeholder {
+  color: #5c4e38;
+}
+
+/* Small Wood Button (side-by-side) */
+.rpg-wood-btn-half-wrap {
+  display: inline-block;
+  position: relative;
+  padding: 4px;
+  background: #4a3318;
+  width: 180px;
+  clip-path: polygon(
+    8px 0%,
+    calc(100% - 8px) 0%,
+    100% 8px,
+    100% calc(100% - 8px),
+    calc(100% - 8px) 100%,
+    8px 100%,
+    0% calc(100% - 8px),
+    0% 8px
+  );
+}
+
+.rpg-wood-btn-half-wrap::before {
+  content: '';
+  position: absolute;
+  inset: 2px;
+  background: #8a6a3a;
+  clip-path: polygon(
+    6px 0%,
+    calc(100% - 6px) 0%,
+    100% 6px,
+    100% calc(100% - 6px),
+    calc(100% - 6px) 100%,
+    6px 100%,
+    0% calc(100% - 6px),
+    0% 6px
+  );
+  z-index: 0;
+}
+
+.rpg-wood-btn-half {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 10px;
+  font-weight: 700;
+  color: #7a9e35;
+  text-shadow:
+    1px 1px 0 #2e4a00,
+    -1px -1px 0 #2e4a00,
+    1px -1px 0 #2e4a00,
+    -1px  1px 0 #2e4a00;
+  background: #c8aa6e;
+  padding: 10px 0;
+  border: none;
+  cursor: pointer;
+  position: relative;
+  white-space: nowrap;
+  display: inline-block;
+  width: 100%;
+  text-align: center;
+  clip-path: polygon(
+    10px 0%,
+    calc(100% - 10px) 0%,
+    100% 10px,
+    100% calc(100% - 10px),
+    calc(100% - 10px) 100%,
+    10px 100%,
+    0% calc(100% - 10px),
+    0% 10px
+  );
+  z-index: 2;
+  outline: none;
+}
+
+.rpg-wood-btn-half::before {
+  content: '';
+  position: absolute;
+  inset: 4px;
+  border: 1.5px solid #a08040;
+  clip-path: polygon(
+    4px 0%,
+    calc(100% - 4px) 0%,
+    100% 4px,
+    100% calc(100% - 4px),
+    calc(100% - 4px) 100%,
+    4px 100%,
+    0% calc(100% - 4px),
+    0% 4px
+  );
+  pointer-events: none;
+  z-index: 1;
+}
+
+.rpg-wood-btn-half:hover {
+  filter: brightness(1.08);
+}
+
+.rpg-wood-btn-half:active {
   transform: translateY(2px);
 }

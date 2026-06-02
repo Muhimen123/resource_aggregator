@@ -19,7 +19,7 @@ interface GameEvent {
   location: string;
 }
 
-type SidebarView = "menu" | "events";
+type SidebarView = "menu" | "events" | "chat";
 
 const DEFAULT_COURSES = ["CSE-315", "CSE-316", "CSE-317"];
 const DEFAULT_EVENT_TYPES = ["CT1", "Assignment", "Lab Quiz"];
@@ -105,6 +105,15 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
   const [newTypeName, setNewTypeName] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
 
+  // AI Chat states
+  const [chatInput, setChatInput] = useState("");
+  const [chatMessages, setChatMessages] = useState<{ sender: "user" | "ai"; text: string }[]>([
+    {
+      sender: "ai",
+      text: "Greetings, traveler! I am the RuneKeeper AI. Ask me anything about your upcoming quests, exams, or schedules, and I shall guide you.",
+    },
+  ]);
+
   const handleAddNewEventType = () => {
     const trimmed = newTypeName.trim();
     if (!trimmed || eventTypes.includes(trimmed)) return;
@@ -167,6 +176,38 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
     );
   });
 
+  const handleSendPrompt = () => {
+    const trimmed = chatInput.trim();
+    if (!trimmed) return;
+
+    const userMsg = { sender: "user" as const, text: trimmed };
+    setChatMessages((prev) => [...prev, userMsg]);
+    setChatInput("");
+
+    // Simulate AI response based on keywords
+    setTimeout(() => {
+      let reply = "Thy request is registered in the Runes. But my magical vision requires more specific queries.";
+      const query = trimmed.toLowerCase();
+
+      if (query.includes("event") || query.includes("test") || query.includes("ct")) {
+        reply = `You have ${events.length} active quests in your scroll. The next upcoming one is ${events[0]?.eventName} (${events[0]?.eventType}) scheduled for ${formatDisplayDate(events[0]?.eventDate)}.`;
+      } else if (query.includes("hello") || query.includes("hi") || query.includes("greetings")) {
+        reply = "Salutations! May the runes light your path. What knowledge do you seek today?";
+      } else if (query.includes("room")) {
+        reply = "You are currently observing the legendary L2T1 room. It holds many challenging exams and lab quizzes.";
+      } else if (query.includes("help")) {
+        reply = "I can summarize your upcoming exams, search through your quests, or help you organize new tasks. Just ask!";
+      }
+
+      setChatMessages((prev) => [...prev, { sender: "ai", text: reply }]);
+    }, 600);
+  };
+
+  const handleGetSummary = () => {
+    const summaryText = `QUEST SUMMARY:\n- Total Exams/Events: ${events.length}\n- Upcoming Course Tasks: ${Array.from(new Set(events.map(e => e.courseName))).join(", ")}\nStay vigilant, hero!`;
+    setChatMessages((prev) => [...prev, { sender: "ai", text: summaryText }]);
+  };
+
   return (
     <>
       <div className={`rpg-sidebar ${isOpen ? "open" : ""}`}>
@@ -174,7 +215,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
 
           {/* Header */}
           <div className="rpg-sidebar-header">
-            {activeView === "events" ? (
+            {activeView !== "menu" ? (
               <button className="rpg-back-btn" onClick={() => setActiveView("menu")}>
                 ←
               </button>
@@ -184,6 +225,10 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
 
             {activeView === "events" && (
               <h2 className="rpg-sidebar-title">Upcoming Events</h2>
+            )}
+
+            {activeView === "chat" && (
+              <h2 className="rpg-sidebar-title" style={{ fontSize: "14px" }}>Ask anything!</h2>
             )}
 
             <button className="rpg-close-btn" onClick={onClose}>
@@ -200,7 +245,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                 </button>
               </div>
               <div className="rpg-wood-btn-wrap">
-                <button className="rpg-wood-btn">
+                <button className="rpg-wood-btn" onClick={() => setActiveView("chat")}>
                   AI Chat
                 </button>
               </div>
@@ -243,6 +288,53 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                 <div className="rpg-wood-btn-wrap">
                   <button className="rpg-wood-btn" onClick={() => setIsAddEventOpen(true)}>
                     Add event
+                  </button>
+                </div>
+              </div>
+            </>
+          )}
+
+          {/* AI Chat View */}
+          {activeView === "chat" && (
+            <>
+              <div className="rpg-chat-box">
+                {/* Upper Scroll Compartment */}
+                <div className="rpg-chat-history">
+                  {chatMessages.map((msg, idx) => (
+                    <div key={idx} style={{ marginBottom: "12px" }}>
+                      <span style={{ color: msg.sender === "ai" ? "#7a9e35" : "#a04040", fontWeight: "bold" }}>
+                        {msg.sender === "ai" ? "RuneKeeper: " : "You: "}
+                      </span>
+                      {msg.text}
+                    </div>
+                  ))}
+                </div>
+
+                {/* Lower Compartment (Text Area) */}
+                <textarea
+                  className="rpg-chat-input-area"
+                  placeholder="Inscribe thy prompt here..."
+                  value={chatInput}
+                  onChange={(e) => setChatInput(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && !e.shiftKey) {
+                      e.preventDefault();
+                      handleSendPrompt();
+                    }
+                  }}
+                />
+              </div>
+
+              {/* Action Buttons: Summary & Ask */}
+              <div style={{ display: "flex", justifyContent: "space-between", width: "100%" }}>
+                <div className="rpg-wood-btn-half-wrap">
+                  <button className="rpg-wood-btn-half" onClick={handleGetSummary}>
+                    Summary
+                  </button>
+                </div>
+                <div className="rpg-wood-btn-half-wrap">
+                  <button className="rpg-wood-btn-half" onClick={handleSendPrompt}>
+                    Ask
                   </button>
                 </div>
               </div>
