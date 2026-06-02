@@ -42,13 +42,19 @@ public class CourseController {
 
         @PostMapping
         public CourseResponse createCourse(
-                        @PathVariable UUID roomId,
-                        @RequestBody @Valid CreateCourseRequest request) {
+                @PathVariable UUID roomId,
+                @RequestBody @Valid CreateCourseRequest request) {
                 System.out.println("CONTROLLER HIT");
 
+                // Temporary hardcoded Demo User ID string matching your Next.js client
+                String temporaryUserIdStr = "2deb6920-19b0-4fa9-aa5f-6364b03bce5d";
+
+                // Pass all 3 required parameters to resolve the compilation error
                 return courseService.createCourse(
-                                roomId,
-                                request);
+                        roomId,
+                        request,
+                        temporaryUserIdStr
+                );
         }
 
         @PatchMapping("/{courseId}")

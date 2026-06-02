@@ -72,31 +72,44 @@ function DirectoryViewer({ roomId, userId }: DirectoryViewerProps) {
   }, [roomId, userId]);
 
   const handleAddFolder = async () => {
-    if (!newFolderName.trim() || !roomDetails?.driveFolderId) return;
-    setCreating(true);
-    try {
-      const res = await fetch(
-        `http://localhost:8080/api/v1/drive/folders?userId=${userId}&folderName=${encodeURIComponent(
-          newFolderName.trim()
-        )}&parentFolderId=${roomDetails.driveFolderId}`,
-        {
-          method: "POST",
-        }
-      );
-      if (res.ok) {
-        const createdFolder = await res.json();
-        setFolders((prev) => [...prev, createdFolder]);
-        setNewFolderName("");
-        setIsAddModalOpen(false);
-      } else {
-        console.error("Failed to create Google Drive folder");
+  // 1. Remove the old parent folder ID check since courses don't use it anymore
+  if (!newFolderName.trim()) return; 
+  setCreating(true);
+  
+  try {
+    // 2. Change the endpoint to point to your CourseController path
+    // Note: The controller expects /rooms/{roomId}/courses, where roomId acts as the semesterId map
+    const res = await fetch(
+      `http://localhost:8080/api/v1/rooms/${roomId}/courses`, 
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        // 3. Send the JSON payload instead of URL query parameters
+        body: JSON.stringify({
+          name: newFolderName.trim(),
+          semesterId: roomId // Passing the roomId parameter to bind to the semesterId field
+        }),
       }
-    } catch (err) {
-      console.error("Error creating folder:", err);
-    } finally {
-      setCreating(false);
+    );
+
+    if (res.ok) {
+      const createdCourse = await res.json();
+      
+      // 4. Update your local state with the returned CourseResponse data
+      setFolders((prev) => [...prev, createdCourse]);
+      setNewFolderName("");
+      setIsAddModalOpen(false);
+    } else {
+      console.error("Failed to create Course structural infrastructure");
     }
-  };
+  } catch (err) {
+    console.error("Error creating course workflow:", err);
+  } finally {
+    setCreating(false);
+  }
+}; 
 
   if (loading) {
     return (
@@ -120,7 +133,7 @@ function DirectoryViewer({ roomId, userId }: DirectoryViewerProps) {
       <div className="flex items-center justify-between mb-4 border-b border-[#eacf8c]/30 pb-3">
         <div className="flex items-center gap-3">
           <h3 className="font-mono text-sm font-bold text-[#eacf8c] tracking-wider uppercase">
-            {roomDetails?.name ? `Chambers of ${roomDetails.name}` : "Archives Directory"}
+            {roomDetails?.name ? `Room: ${roomDetails.name}` : "Archives Directory"}
           </h3>
           <span className="text-[10px] font-mono text-[#CEA864] bg-white/10 px-2 py-0.5 rounded">
             {folders.length} Folder{folders.length !== 1 ? "s" : ""}

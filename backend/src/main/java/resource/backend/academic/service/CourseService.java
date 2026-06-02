@@ -18,9 +18,7 @@ public interface CourseService {
             UUID semesterId,
             UUID courseId);
 
-    CourseResponse createCourse(
-            UUID semesterId,
-            CreateCourseRequest request);
+    CourseResponse createCourse(UUID semesterId, CreateCourseRequest request, String userIdStr);
 
     CourseResponse updateCourse(
             UUID semesterId,

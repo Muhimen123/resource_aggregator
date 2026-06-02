@@ -15,7 +15,10 @@ import resource.backend.academic.repository.SemesterRepository;
 import resource.backend.academic.service.CourseService;
 import resource.backend.folder.entity.Folder;
 import resource.backend.folder.repository.FolderRepository;
+import resource.backend.gdrive.service.GoogleDriveService;
 
+import javax.swing.filechooser.FileSystemView;
+import java.io.IOException;
 import java.util.UUID;
 
 @Service
@@ -26,6 +29,7 @@ public class CourseServiceImpl implements CourseService {
         private final CourseRepository courseRepository;
         private final SemesterRepository semesterRepository;
         private final FolderRepository folderRepository;
+        private final GoogleDriveService googleDriveService;
 
         @Override
         @Transactional(readOnly = true)
@@ -57,40 +61,48 @@ public class CourseServiceImpl implements CourseService {
         }
 
         @Override
-        public CourseResponse createCourse(
-                        UUID semesterId,
-                        CreateCourseRequest request) {
+        public CourseResponse createCourse(UUID semesterId, CreateCourseRequest request, String userIdStr) {
+                try {
+                        // 1. Generate unique IDs for both entities up front
+                        UUID newFolderId = UUID.randomUUID();
+                        UUID newCourseId = UUID.randomUUID();
 
-                System.out.println("===== CREATE COURSE =====");
-                System.out.println("Semester ID: " + semesterId);
-                System.out.println("Course Name: " + request.name());
-                System.out.println("Root Folder ID: " + request.rootFolderId());
+                        // 2. Create the folder in Google Drive at the Root Level
+                        // Passing "root" keeps your Google Drive API happy without a parent ID
+                        // FIXED: Changed request.getName() to request.name() for Java Record syntax
+                        com.google.api.services.drive.model.File googleFolder =
+                                googleDriveService.createFolder(userIdStr, request.name(), "root");
 
-                Semester semester = semesterRepository
-                                .findById(semesterId)
-                                .orElseThrow(() -> new RuntimeException("Semester not found"));
+                        // 3. Create and Save the Folder record to the database first
+                        // Note: parent_id MUST be null to bypass your database's cycle-prevention trigger
+                        // FIXED: Removed .id() from builder and assigned it using the public setter method instead
+                        Folder localFolder = Folder.builder()
+                                .name(request.name())
+                                .driveFolderId(googleFolder.getId())
+                                .parent(null) // <--- Enforces top-level folder status safely
+                                .build();
+                        localFolder.setId(newFolderId); // <--- Explicitly sets the inherited ID via its public setter
+                        folderRepository.save(localFolder);
 
-                System.out.println("Semester Found: " + semester.getName());
+                        // 4. Create and Save the Course record, linking it to the folder we just saved
+                        // FIXED: Removed .id() from builder and assigned it using the public setter method instead
+                        // <--- Explicitly sets the inherited ID via its public setter
+                        Semester semesterProxy = semesterRepository.getReferenceById(semesterId);
 
-                Course course = new Course();
+// 2. Pass it directly to the builder
+                        Course courseEntity = Course.builder()
+                                .name(request.name())
+                                .semester(semesterProxy) // <--- Fixed: passing the Semester object reference
+                                .rootFolder(localFolder)  // <--- Optional/Clean: pass the Folder object directly instead of raw ID
+                                .build();
+                        courseEntity.setId(newCourseId);
+                        Course savedCourse = courseRepository.save(courseEntity);
 
-                course.setName(request.name());
-                course.setSemester(semester);
+                        return toResponse(savedCourse);
 
-                if (request.rootFolderId() != null) {
-
-                        Folder folder = folderRepository
-                                        .findById(request.rootFolderId())
-                                        .orElseThrow(() -> new RuntimeException("Folder not found"));
-
-                        course.setRootFolder(folder);
+                } catch (IOException e) {
+                        throw new RuntimeException("Failed to provision folder infrastructure on Google Drive", e);
                 }
-
-                course = courseRepository.save(course);
-
-                System.out.println("Course Saved: " + course.getId());
-
-                return toResponse(course);
         }
 
         @Override
@@ -147,4 +159,6 @@ public class CourseServiceImpl implements CourseService {
                                 course.getCreatedAt(),
                                 course.getUpdatedAt());
         }
+
+
 }

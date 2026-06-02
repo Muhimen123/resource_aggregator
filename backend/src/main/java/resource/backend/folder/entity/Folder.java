@@ -1,10 +1,7 @@
 package resource.backend.folder.entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import resource.backend.common.entity.BaseEntity;
 import resource.backend.user.entity.User;
 
@@ -14,6 +11,7 @@ import resource.backend.user.entity.User;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class Folder extends BaseEntity {
 
     @Column(nullable = false)

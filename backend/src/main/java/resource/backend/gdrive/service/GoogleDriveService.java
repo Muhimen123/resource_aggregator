@@ -120,41 +120,22 @@ public class GoogleDriveService {
 
     @Transactional
     public File createFolder(String userIdStr, String folderName, String parentFolderId) throws IOException {
+        // 1. Authenticate and retrieve the Drive client
         Drive drive = getDriveService(userIdStr);
 
+        // 2. Set up folder metadata
         File fileMetadata = new com.google.api.services.drive.model.File();
         fileMetadata.setName(folderName);
         fileMetadata.setMimeType("application/vnd.google-apps.folder");
+
+        // 3. Nest inside parent folder if one is supplied
         if (parentFolderId != null && !parentFolderId.trim().isEmpty() && !parentFolderId.equalsIgnoreCase("root")) {
             fileMetadata.setParents(List.of(parentFolderId));
         }
 
-        File driveFolder = drive.files().create(fileMetadata)
+        // 4. Create the folder on Google Drive and return the result
+        return drive.files().create(fileMetadata)
                 .setFields("id, name, mimeType, webViewLink")
                 .execute();
-
-        // Save folder metadata to local database
-        try {
-            UUID userId = UUID.fromString(userIdStr);
-            User owner = userRepository.findById(userId).orElse(null);
-            if (owner != null) {
-                Folder dbFolder = new Folder();
-                dbFolder.setName(folderName);
-                dbFolder.setDriveFolderId(driveFolder.getId());
-                dbFolder.setOwner(owner);
-
-                if (parentFolderId != null && !parentFolderId.trim().isEmpty() && !parentFolderId.equalsIgnoreCase("root")) {
-                    folderRepository.findByDriveFolderId(parentFolderId).ifPresent(dbFolder::setParent);
-                } else {
-                    dbFolder.setParent(null);
-                }
-                folderRepository.save(dbFolder);
-            }
-        } catch (Exception e) {
-            // Log warning but don't strictly crash the request if DB saving fails
-            System.err.println("Warning: Failed to save folder metadata to database: " + e.getMessage());
-        }
-
-        return driveFolder;
     }
 }
