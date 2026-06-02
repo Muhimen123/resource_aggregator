@@ -48,7 +48,7 @@ export default function GemCounter({ count }: GemCounterProps) {
 
         .gem-badge-bg {
           background: #D1A869; /* Matches the exact warm tan color from your screenshot */
-          border-radius: 0 6px 6px 0; /* Rounded right corners matching the asset */
+          border-radius: 6px; /* Rounded right corners matching the asset */
           /* Creates space on the left side of the text box so the gem doesn't block numbers */
           padding: 8px 16px 8px 32px; 
           display: flex;
