@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import "./sidebar.css";
 import ChatBox from "./ChatBox";
-import ProgressTracker from "./ProgressTracker";
+import HeartProgress from "./HeartProgress";
 
 interface SidebarProps {
   isOpen: boolean;
@@ -266,7 +266,24 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
 
           {/* Track Progress View */}
           {activeView === "progress" && (
-            <ProgressTracker />
+            <div className="progress-tracker-container">
+              {[
+                { id: "1", name: "Ch1", percentage: 10 },
+                { id: "2", name: "Ch2", percentage: 30 },
+                { id: "3", name: "Ch3", percentage: 50 },
+                { id: "4", name: "Ch4", percentage: 0 },
+                { id: "5", name: "Mordanality", percentage: 70 },
+                { id: "6", name: "Ch1", percentage: 0 },
+              ].map((item) => (
+                <div key={item.id} className="progress-row">
+                  <div className="progress-header-info">
+                    <img src="/assets/magic_openbook.png" alt="Magic Book Icon" className="progress-book-icon" />
+                    <span className="progress-label">{item.name}</span>
+                  </div>
+                  <HeartProgress percentage={item.percentage} />
+                </div>
+              ))}
+            </div>
           )}
 
         </div>
