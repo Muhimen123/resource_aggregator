@@ -65,7 +65,7 @@ export default function HomepagePage() {
             <div className="left-panel">
                 <div className="rpg-wood-btn-wrap">
                     <button className="rpg-wood-btn" onClick={handleJoinExisting}>
-                        Join Existing Room
+                        Join Room
                     </button>
                 </div>
 
