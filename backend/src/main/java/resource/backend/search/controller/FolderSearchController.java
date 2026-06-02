@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/api/folders")
+@RequestMapping("/folders")
 @RequiredArgsConstructor
 public class FolderSearchController {
 

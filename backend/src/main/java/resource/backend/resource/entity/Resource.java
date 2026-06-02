@@ -34,7 +34,7 @@ public class Resource extends BaseEntity {
     @JoinColumn(name = "folder_id")
     private Folder folder;
 
-    @Enumerated(EnumType.STRING)
+    @Convert(converter = ResourceTypeConverter.class)
     @Column(name = "resource_type", nullable = false)
     private ResourceType resourceType = ResourceType.OTHER;
 
