@@ -223,7 +223,7 @@ export function AuthInput({ inputLabel, type }: AuthInputProps) {
                   : "/assets/eye_closed.png"
               }
               alt="Toggle password visibility"
-              className="size-8"
+              className="size-8 cursor-pointer"
             />
           </button>
         )}

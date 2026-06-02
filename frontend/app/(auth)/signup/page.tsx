@@ -22,7 +22,8 @@ export default function LoginPage()
             <button 
               onClick={()=>router.push("/")}
               className="size-10">
-              <Image 
+              <Image
+                className="cursor-pointer hover:brightness-85 transition" 
                 src={"/assets/back_arrow.png"}
                 alt="back arrow"
                 width={40}
