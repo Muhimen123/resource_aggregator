@@ -48,14 +48,14 @@
 .rooms-card {
   width: 100%;
   max-width: 440px;
-  background: rgba(30, 35, 25, 0.75);
+  background: rgba(30, 35, 25, 0.4);
   border: 3px solid #CEA864;
   border-radius: 8px;
   padding: 30px 24px;
   box-shadow:
     0 10px 30px rgba(0, 0, 0, 0.8),
     inset 0 0 20px rgba(206, 168, 100, 0.15);
-  backdrop-filter: blur(12px);
+  backdrop-filter: blur(8px);
   position: relative;
   z-index: 2;
   display: flex;
@@ -147,20 +147,16 @@
   width: 100%;
   text-align: center;
 
-  clip-path: polygon(
-    14px 0%,
-    calc(100% - 14px) 0%,
-    100% 14px,
-    100% calc(100% - 14px),
-    calc(100% - 14px) 100%,
-    14px 100%,
-    0% calc(100% - 14px),
-    0% 14px
-  );
+  clip-path: polygon(14px 0%,
+      calc(100% - 14px) 0%,
+      100% 14px,
+      100% calc(100% - 14px),
+      calc(100% - 14px) 100%,
+      14px 100%,
+      0% calc(100% - 14px),
+      0% 14px);
 
-  filter: drop-shadow(0 0 3px #1f2414)
-          drop-shadow(0 0 6px #3b4225)
-          drop-shadow(0 3px 6px rgba(0, 0, 0, 0.6));
+  filter: drop-shadow(0 0 3px #1f2414) drop-shadow(0 0 6px #3b4225) drop-shadow(0 3px 6px rgba(0, 0, 0, 0.6));
 
   transition: filter 80ms, transform 80ms;
 }
@@ -171,16 +167,14 @@
   padding: 5px;
   background: #4F3310;
   width: 340px;
-  clip-path: polygon(
-    10px 0%,
-    calc(100% - 10px) 0%,
-    100% 10px,
-    100% calc(100% - 10px),
-    calc(100% - 10px) 100%,
-    10px 100%,
-    0% calc(100% - 10px),
-    0% 10px
-  );
+  clip-path: polygon(10px 0%,
+      calc(100% - 10px) 0%,
+      100% 10px,
+      100% calc(100% - 10px),
+      calc(100% - 10px) 100%,
+      10px 100%,
+      0% calc(100% - 10px),
+      0% 10px);
 }
 
 .rpg-dark-btn-wrap::before {
@@ -188,16 +182,14 @@
   position: absolute;
   inset: 2px;
   background: #8a6a3a;
-  clip-path: polygon(
-    8px 0%,
-    calc(100% - 8px) 0%,
-    100% 8px,
-    100% calc(100% - 8px),
-    calc(100% - 8px) 100%,
-    8px 100%,
-    0% calc(100% - 8px),
-    0% 8px
-  );
+  clip-path: polygon(8px 0%,
+      calc(100% - 8px) 0%,
+      100% 8px,
+      100% calc(100% - 8px),
+      calc(100% - 8px) 100%,
+      8px 100%,
+      0% calc(100% - 8px),
+      0% 8px);
   z-index: 0;
 }
 
@@ -206,16 +198,14 @@
   position: absolute;
   inset: 6px;
   border: 2px solid #a08040;
-  clip-path: polygon(
-    6px 0%,
-    calc(100% - 6px) 0%,
-    100% 6px,
-    100% calc(100% - 6px),
-    calc(100% - 6px) 100%,
-    6px 100%,
-    0% calc(100% - 6px),
-    0% 6px
-  );
+  clip-path: polygon(6px 0%,
+      calc(100% - 6px) 0%,
+      100% 6px,
+      100% calc(100% - 6px),
+      calc(100% - 6px) 100%,
+      6px 100%,
+      0% calc(100% - 6px),
+      0% 6px);
   pointer-events: none;
   z-index: 1;
 }
@@ -234,17 +224,12 @@
 }
 
 .rpg-dark-btn:hover {
-  filter: drop-shadow(0 0 3px #1f2414)
-          drop-shadow(0 0 6px #3b4225)
-          drop-shadow(0 3px 6px rgba(0, 0, 0, 0.6))
-          brightness(1.15);
+  filter: drop-shadow(0 0 3px #1f2414) drop-shadow(0 0 6px #3b4225) drop-shadow(0 3px 6px rgba(0, 0, 0, 0.6)) brightness(1.15);
 }
 
 .rpg-dark-btn:active {
   transform: translateY(2px);
-  filter: drop-shadow(0 0 2px #1f2414)
-          drop-shadow(0 3px 4px rgba(0, 0, 0, 0.4))
-          brightness(0.9);
+  filter: drop-shadow(0 0 2px #1f2414) drop-shadow(0 3px 4px rgba(0, 0, 0, 0.4)) brightness(0.9);
 }
 
 @media (max-width: 900px) {
@@ -269,8 +254,13 @@
 }
 
 @keyframes modalFadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
 }
 
 .rpg-modal-card {
@@ -279,7 +269,7 @@
   border-radius: 12px;
   padding: 6px;
   box-shadow:
-    0 15px 35px rgba(0, 0, 0, 0.8),
+    0 15px 35px rgba(0, 0, 0, 0.2),
     inset 0 0 10px rgba(0, 0, 0, 0.2);
   width: 90%;
   max-width: 480px;
@@ -289,8 +279,13 @@
 }
 
 @keyframes modalScaleUp {
-  from { transform: scale(0.9) translateY(10px); }
-  to { transform: scale(1) translateY(0); }
+  from {
+    transform: scale(0.9) translateY(10px);
+  }
+
+  to {
+    transform: scale(1) translateY(0);
+  }
 }
 
 .rpg-modal-inner {
