@@ -100,9 +100,7 @@ export default function RpgButton({
         <div
           className="absolute inset-[6px] pointer-events-none"
           style={{
-            border: `2px solid ${
-              isCream ? "#a08040" : "#a08040"
-            }`,
+            border: `2px solid #a08040`,
             clipPath: `polygon(
               6px 0%,
               calc(100% - 6px) 0%,

@@ -7,13 +7,23 @@ body {
   padding: 0;
   box-sizing: border-box;
   font-family: "Press Start 2P", Arial;
+  background-image: url("/assets/bg_front.png");
   /* color:  */
 }
 
-@theme{
+.text-stroke-green {
+   text-shadow:
+      3.5px 3.5px 0 var(--color-dark-green),
+     -3.5px -3.5px 0 var(--color-dark-green),  
+      3.5px -3.5px 0 var(--color-dark-green),
+      -3.5px 3.5px 0 var(--color-dark-green);
+    }
+
+
+@theme inline{
+  --color-*: initial;
   --color-beige: oklch(75.241% 0.09675 79.993);
   --color-beige-hover: oklch(84.038% 0.08416 76.862);
   --color-dark-green: oklch(33.087% 0.04069 121.913);
   --color-light-green: oklch(65.1% 0.13832 126.25);
-  
 }
