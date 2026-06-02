@@ -9,50 +9,38 @@ import java.util.UUID;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-// 3. Lombok Annotation Import
-import lombok.RequiredArgsConstructor;
-
-// 4. Google API Client Imports
+// 3. Google API Client Imports
 import com.google.api.client.googleapis.auth.oauth2.GoogleCredential;
 import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.gson.GsonFactory;
 import com.google.api.client.http.InputStreamContent;
 import com.google.api.services.drive.Drive;
 import com.google.api.services.drive.model.File;
+
+// 4. Application Imports
 import resource.backend.gdrive.entity.UserToken;
 import resource.backend.gdrive.repository.UserTokenRepository;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.transaction.annotation.Transactional;
-import resource.backend.folder.entity.Folder;
-import resource.backend.folder.repository.FolderRepository;
-import resource.backend.user.entity.User;
-import resource.backend.user.repository.UserRepository;
 
 @Service
 public class GoogleDriveService {
 
     private final UserTokenRepository tokenRepository;
-    private final FolderRepository folderRepository;
-    private final UserRepository userRepository;
 
-    public GoogleDriveService(UserTokenRepository tokenRepository, FolderRepository folderRepository, UserRepository userRepository) {
+    // Cleaned up unused folderRepository and userRepository dependencies
+    public GoogleDriveService(UserTokenRepository tokenRepository) {
         this.tokenRepository = tokenRepository;
-        this.folderRepository = folderRepository;
-        this.userRepository = userRepository;
     }
 
     @Value("${google.client-id}") private String clientId;
     @Value("${google.client-secret}") private String clientSecret;
 
     public Drive getDriveService(String userIdStr) throws IOException {
-        // 1. Convert incoming String ID from Next.js request into a clean java.util.UUID
         UUID userId = UUID.fromString(userIdStr);
 
-        // 2. Use the standard JPA built-in .findById() method instead of findByUserId
         UserToken tokens = tokenRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("Google Drive not connected for user: " + userIdStr));
 
-        // Set up the credential wrapper that automatically uses the refresh_token if access_token is expired
         @SuppressWarnings("deprecation")
         GoogleCredential credential = new GoogleCredential.Builder()
                 .setTransport(new NetHttpTransport())
@@ -118,22 +106,19 @@ public class GoogleDriveService {
         drive.files().delete(fileId).execute();
     }
 
-    @Transactional
+    // 🔥 CLEANED: Strictly focused on Google Drive execution API logic.
+    // Data mapping and Supabase persistence is safely handled by FolderService now.
     public File createFolder(String userIdStr, String folderName, String parentFolderId) throws IOException {
-        // 1. Authenticate and retrieve the Drive client
         Drive drive = getDriveService(userIdStr);
 
-        // 2. Set up folder metadata
-        File fileMetadata = new com.google.api.services.drive.model.File();
+        File fileMetadata = new File();
         fileMetadata.setName(folderName);
         fileMetadata.setMimeType("application/vnd.google-apps.folder");
 
-        // 3. Nest inside parent folder if one is supplied
         if (parentFolderId != null && !parentFolderId.trim().isEmpty() && !parentFolderId.equalsIgnoreCase("root")) {
             fileMetadata.setParents(List.of(parentFolderId));
         }
 
-        // 4. Create the folder on Google Drive and return the result
         return drive.files().create(fileMetadata)
                 .setFields("id, name, mimeType, webViewLink")
                 .execute();
