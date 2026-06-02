@@ -22,16 +22,23 @@ import com.google.api.services.drive.model.File;
 import resource.backend.gdrive.entity.UserToken;
 import resource.backend.gdrive.repository.UserTokenRepository;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.transaction.annotation.Transactional;
+import resource.backend.folder.entity.Folder;
+import resource.backend.folder.repository.FolderRepository;
+import resource.backend.user.entity.User;
+import resource.backend.user.repository.UserRepository;
 
 @Service
 public class GoogleDriveService {
 
-    // No external imports needed if UserToken and UserTokenRepository
-    // are in this exact same 'resource.backend.gdrive' folder package!
     private final UserTokenRepository tokenRepository;
+    private final FolderRepository folderRepository;
+    private final UserRepository userRepository;
 
-    public GoogleDriveService(UserTokenRepository tokenRepository) {
+    public GoogleDriveService(UserTokenRepository tokenRepository, FolderRepository folderRepository, UserRepository userRepository) {
         this.tokenRepository = tokenRepository;
+        this.folderRepository = folderRepository;
+        this.userRepository = userRepository;
     }
 
     @Value("${google.client-id}") private String clientId;
@@ -74,10 +81,13 @@ public class GoogleDriveService {
                 .getFiles();
     }
 
-    public List<File> listFolders(String userId) throws IOException {
+    public List<File> listFolders(String userId, String parentFolderId) throws IOException {
         Drive drive = getDriveService(userId);
+        String parent = (parentFolderId != null && !parentFolderId.trim().isEmpty() && !parentFolderId.equalsIgnoreCase("root"))
+                ? parentFolderId
+                : "root";
         return drive.files().list()
-                .setQ("'root' in parents and trashed = false and mimeType = 'application/vnd.google-apps.folder'")
+                .setQ("'" + parent + "' in parents and trashed = false and mimeType = 'application/vnd.google-apps.folder'")
                 .setPageSize(50)
                 .setFields("nextPageToken, files(id, name, mimeType)")
                 .execute()
@@ -106,5 +116,45 @@ public class GoogleDriveService {
     public void deleteFile(String userId, String fileId) throws IOException {
         Drive drive = getDriveService(userId);
         drive.files().delete(fileId).execute();
+    }
+
+    @Transactional
+    public File createFolder(String userIdStr, String folderName, String parentFolderId) throws IOException {
+        Drive drive = getDriveService(userIdStr);
+
+        File fileMetadata = new com.google.api.services.drive.model.File();
+        fileMetadata.setName(folderName);
+        fileMetadata.setMimeType("application/vnd.google-apps.folder");
+        if (parentFolderId != null && !parentFolderId.trim().isEmpty() && !parentFolderId.equalsIgnoreCase("root")) {
+            fileMetadata.setParents(List.of(parentFolderId));
+        }
+
+        File driveFolder = drive.files().create(fileMetadata)
+                .setFields("id, name, mimeType, webViewLink")
+                .execute();
+
+        // Save folder metadata to local database
+        try {
+            UUID userId = UUID.fromString(userIdStr);
+            User owner = userRepository.findById(userId).orElse(null);
+            if (owner != null) {
+                Folder dbFolder = new Folder();
+                dbFolder.setName(folderName);
+                dbFolder.setDriveFolderId(driveFolder.getId());
+                dbFolder.setOwner(owner);
+
+                if (parentFolderId != null && !parentFolderId.trim().isEmpty() && !parentFolderId.equalsIgnoreCase("root")) {
+                    folderRepository.findByDriveFolderId(parentFolderId).ifPresent(dbFolder::setParent);
+                } else {
+                    dbFolder.setParent(null);
+                }
+                folderRepository.save(dbFolder);
+            }
+        } catch (Exception e) {
+            // Log warning but don't strictly crash the request if DB saving fails
+            System.err.println("Warning: Failed to save folder metadata to database: " + e.getMessage());
+        }
+
+        return driveFolder;
     }
 }
