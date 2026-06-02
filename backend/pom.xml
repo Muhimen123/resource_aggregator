@@ -29,6 +29,15 @@
 	<properties>
 		<java.version>17</java.version>
 	</properties>
+
+	<repositories>
+		<repository>
+			<id>GroupDocsJavaAPI</id>
+			<name>GroupDocs Java API</name>
+			<url>https://releases.groupdocs.com/java/repo/</url>
+		</repository>
+	</repositories>
+
 	<dependencies>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -57,6 +66,13 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-restclient-test</artifactId>
 			<scope>test</scope>
+		</dependency>
+
+		<!-- GroupDocs Document Viewer for high-fidelity rendering -->
+		<dependency>
+			<groupId>com.groupdocs</groupId>
+			<artifactId>groupdocs-viewer</artifactId>
+			<version>24.4</version>
 		</dependency>
 	</dependencies>
 
