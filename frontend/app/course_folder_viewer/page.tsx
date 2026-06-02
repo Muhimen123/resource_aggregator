@@ -11,18 +11,18 @@ export default function CourseFolderViewerPage() {
   return (
     <div className="homepage-container">
       <div className="homepage-overlay" />
-      
-      <div 
-        className="homepage-content" 
+
+      <div
+        className="homepage-content"
         style={{ display: "flex", flexDirection: "column", gap: "20px", alignItems: "center" }}
       >
-        <h1 
+        <h1
           className="runekeeper-title"
           style={{ fontSize: "28px", color: "#323921", textShadow: "3px 3px 0 #CEA864, -3px -3px 0 #CEA864, 3px -3px 0 #CEA864, -3px 3px 0 #CEA864" }}
         >
           Course Folder Viewer
         </h1>
-        
+
         <p style={{ fontFamily: "'Press Start 2P', monospace", fontSize: "14px", color: "#E8C493", textShadow: "2px 2px 0 #000", textAlign: "center" }}>
           Welcome to the Course Folder Viewer. Navigate files, check schedules, and consult your events.
         </p>
