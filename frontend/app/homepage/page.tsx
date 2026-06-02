@@ -1,8 +1,10 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 
 export default function HomepagePage() {
+    const router = useRouter();
     const userId = "2deb6920-19b0-4fa9-aa5f-6364b03bce5d"; // Demo static User ID
     const [rooms, setRooms] = useState<{ id: string; name: string }[]>([]);
 
@@ -42,8 +44,8 @@ export default function HomepagePage() {
         console.log("Logout clicked");
     };
 
-    const handleRoomClick = (roomName: string) => {
-        console.log(`Clicked room: ${roomName}`);
+    const handleRoomClick = (roomId: string) => {
+        router.push(`/room_viewer?roomId=${roomId}`);
     };
 
     const submitCreateRoom = async () => {
@@ -118,7 +120,7 @@ export default function HomepagePage() {
                             <div key={room.id} className="rpg-dark-btn-wrap">
                                 <button
                                     className="rpg-dark-btn"
-                                    onClick={() => handleRoomClick(room.name)}
+                                    onClick={() => handleRoomClick(room.id)}
                                 >
                                     {room.name}
                                 </button>

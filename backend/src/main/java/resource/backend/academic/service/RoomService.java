@@ -69,4 +69,14 @@ public class RoomService {
     public List<Semester> getRoomsByOwner(UUID ownerId) {
         return semesterRepository.findByOwnerId(ownerId);
     }
+
+    public String getRoomDriveFolderId(UUID ownerId, String roomName) {
+        return folderRepository.findByOwnerIdAndNameAndParentIsNull(ownerId, roomName)
+                .map(Folder::getDriveFolderId)
+                .orElse(null);
+    }
+
+    public Semester getRoomById(UUID id) {
+        return semesterRepository.findById(id).orElse(null);
+    }
 }
