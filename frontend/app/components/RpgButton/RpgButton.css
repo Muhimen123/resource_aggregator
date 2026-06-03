@@ -1,0 +1,128 @@
+/* Extracted RPG button styles from auth.css */
+.rpg-wood-btn {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 14px;
+  font-weight: 700;
+  color: #7a9e35;
+  text-shadow:
+    2px 2px 0 #2e4a00,
+    -1px -1px 0 #2e4a00,
+    1px -1px 0 #2e4a00,
+    -1px  1px 0 #2e4a00;
+
+  background: #c8aa6e;
+  padding: 14px 0;
+  border: none;
+  cursor: pointer;
+  position: relative;
+  white-space: nowrap;
+  display: inline-block;
+  letter-spacing: 0.25em;
+  width: 100%;
+  text-align: center;
+
+  clip-path: polygon(
+    16px 0%,
+    calc(100% - 16px) 0%,
+    100% 16px,
+    100% calc(100% - 16px),
+    calc(100% - 16px) 100%,
+    16px 100%,
+    0% calc(100% - 16px),
+    0% 16px
+  );
+
+  filter: drop-shadow(0 0 3px #4a3318)
+          drop-shadow(0 0 6px #8a6a3a)
+          drop-shadow(0 4px 8px rgba(0,0,0,0.6));
+
+  transition: filter 80ms, transform 80ms;
+}
+
+.rpg-wood-btn-wrap {
+  display: inline-block;
+  position: relative;
+  padding: 6px;
+  background: #4a3318;
+  width: 340px;
+  clip-path: polygon(
+    12px 0%,
+    calc(100% - 12px) 0%,
+    100% 12px,
+    100% calc(100% - 12px),
+    calc(100% - 12px) 100%,
+    12px 100%,
+    0% calc(100% - 12px),
+    0% 12px
+  );
+}
+
+.rpg-wood-btn-wrap::before {
+  content: '';
+  position: absolute;
+  inset: 3px;
+  background: #8a6a3a;
+  clip-path: polygon(
+    10px 0%,
+    calc(100% - 10px) 0%,
+    100% 10px,
+    100% calc(100% - 10px),
+    calc(100% - 10px) 100%,
+    10px 100%,
+    0% calc(100% - 10px),
+    0% 10px
+  );
+  z-index: 0;
+}
+
+.rpg-wood-btn::before {
+  content: '';
+  position: absolute;
+  inset: 8px;
+  border: 2px solid #a08040;
+  clip-path: polygon(
+    8px 0%,
+    calc(100% - 8px) 0%,
+    100% 8px,
+    100% calc(100% - 8px),
+    calc(100% - 8px) 100%,
+    8px 100%,
+    0% calc(100% - 8px),
+    0% 8px
+  );
+  pointer-events: none;
+  z-index: 1;
+}
+
+.rpg-wood-btn::after {
+  content: '';
+  position: absolute;
+  inset: 6px;
+  background:
+    radial-gradient(circle, #6b8c2a 3px, transparent 3px) 0    0    / 14px 14px no-repeat,
+    radial-gradient(circle, #6b8c2a 3px, transparent 3px) 100% 0    / 14px 14px no-repeat,
+    radial-gradient(circle, #6b8c2a 3px, transparent 3px) 0    100% / 14px 14px no-repeat,
+    radial-gradient(circle, #6b8c2a 3px, transparent 3px) 100% 100% / 14px 14px no-repeat;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.rpg-wood-btn:hover {
+  filter: drop-shadow(0 0 3px #4a3318)
+          drop-shadow(0 0 6px #8a6a3a)
+          drop-shadow(0 4px 8px rgba(0,0,0,0.6))
+          brightness(1.08);
+}
+
+.rpg-wood-btn:active {
+  transform: translateY(3px);
+  filter: drop-shadow(0 0 2px #4a3318)
+          drop-shadow(0 4px 4px rgba(0,0,0,0.4))
+          brightness(0.93);
+}
+
+/* Variant modifier that only changes the background color for green variant */
+.rpg-green-button {
+  background: #32391E;
+  color: #c8aa6e;
+}
