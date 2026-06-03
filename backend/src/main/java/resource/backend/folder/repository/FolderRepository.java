@@ -6,10 +6,17 @@ import org.springframework.stereotype.Repository;
 import resource.backend.folder.entity.Folder;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Repository
 public interface FolderRepository extends JpaRepository<Folder, java.util.UUID> {
+
+    Optional<Folder> findByOwnerIdAndNameAndParentIsNull(UUID ownerId, String name);
+
+    List<Folder> findByParentId(UUID parentId);
+
+    Optional<Folder> findByDriveFolderId(String driveFolderId);
 
     @Query(value = """
             WITH RECURSIVE descendants AS (

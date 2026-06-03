@@ -12,6 +12,8 @@ import java.util.UUID;
 @Repository
 public interface ResourceRepository extends JpaRepository<Resource, java.util.UUID> {
 
+    List<Resource> findByFolderId(UUID folderId);
+
     @Query(value = """
             WITH RECURSIVE descendants AS (
                 SELECT id FROM folders WHERE id = :rootFolderId
