@@ -1,4 +1,4 @@
-.auth-container {
+/* .auth-container {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -10,16 +10,17 @@
   background-position: center;
   background-repeat: no-repeat;
   position: relative;
-  padding: 20px;
-}
+  /* padding: 20px; */
+/*  
+} */
 
 /* Dark overlay to give depth and ensure buttons/text stand out */
-.auth-overlay {
+/* .auth-overlay {
   position: absolute;
   inset: 0;
   background: rgba(0, 0, 0, 0.35);
   z-index: 1;
-}
+} */
 
 .auth-content {
   position: relative;
@@ -133,7 +134,7 @@
   position: relative;
   white-space: nowrap;
   display: inline-block;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.25em;
   width: 100%;
   text-align: center;
 
