@@ -2,17 +2,82 @@
 
 import React, { useState, useEffect, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
+import Image from "next/image";
 import Sidebar from "../components/Sidebar";
+import GemCounter from "../components/GemCounter"; // Adjust path if necessary
+import RoomTopBar from "../components/RoomTopBar";
 import "../auth_init/auth.css";
 import "../homepage/homepage.css";
 
-// CLEANED UP: Removed unused FolderType interface 
+/* ==========================================
+   1. HOMEPAGE TOP BAR COMPONENT
+   ========================================== */
+interface HomepageTopBarProps {
+  gems: number;
+  onFrameClick?: () => void;
+}
 
+function HomePageTopBar({ gems, onFrameClick }: HomepageTopBarProps) {
+  return (
+    <div className="topbar">
+      {/* Left: Runekeeper title */}
+      <span className="title">Runekeeper</span>
+
+      {/* Right: gems + frame/achievement icon */}
+      <div className="right">
+        <GemCounter count={gems} />
+        <button className="icon-btn" onClick={onFrameClick}>
+          <Image src="/assets/frame-1.png" alt="achievements" width={32} height={32} />
+        </button>
+      </div>
+
+      <style jsx>{`
+        .topbar {
+          position: relative;
+          z-index: 2;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          width: 100%;
+          height: 52px;
+          background: transparent;
+          padding: 0 14px;
+          box-sizing: border-box;
+        }
+        .title {
+          font-family: "Press Start 2P", monospace;
+          font-size: 18px;
+          color: #323921;
+          letter-spacing: 2px;
+          text-shadow: 2px 2px 0 #CFA965, 0 2px 2px #00000099;
+        }
+        .right {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+        }
+        .icon-btn {
+          background: none;
+          border: none;
+          cursor: pointer;
+          padding: 0;
+          display: flex;
+          align-items: center;
+          z-index: 2;
+        }
+      `}</style>
+    </div>
+  );
+}
+
+/* ==========================================
+   2. TYPES & INTERFACES
+   ========================================== */
 interface CourseResponseType {
-  id: string;          // UUID of the Course record
-  name: string;        // Name of the course (e.g. "CSE-311")
-  semesterId: string;  // Bound Semester UUID
-  rootFolderId: string;// DB ID of the linked folder row
+  id: string;          
+  name: string;        
+  semesterId: string;  
+  rootFolderId: string;
 }
 
 interface RoomDetailsType {
@@ -25,9 +90,13 @@ interface RoomDetailsType {
 interface DirectoryViewerProps {
   roomId: string;
   userId: string;
+  onRoomDetailsFetched?: (details: RoomDetailsType) => void;
 }
 
-function DirectoryViewer({ roomId, userId }: DirectoryViewerProps) {
+/* ==========================================
+   3. MAIN ARCHIVE / DIRECTORY VIEWER
+   ========================================== */
+function DirectoryViewer({ roomId, userId, onRoomDetailsFetched }: DirectoryViewerProps) {
   const router = useRouter();
   const [folders, setFolders] = useState<CourseResponseType[]>([]);
   const [roomDetails, setRoomDetails] = useState<RoomDetailsType | null>(null);
@@ -45,15 +114,16 @@ function DirectoryViewer({ roomId, userId }: DirectoryViewerProps) {
       setLoading(true);
       setError(null);
       try {
-        // 1. Fetch container room/semester data
         const roomRes = await fetch(`http://localhost:8080/api/v1/rooms/${roomId}`);
         if (!roomRes.ok) {
           throw new Error("Failed to load room details.");
         }
         const roomData: RoomDetailsType = await roomRes.json();
         setRoomDetails(roomData);
+        if (onRoomDetailsFetched) {
+          onRoomDetailsFetched(roomData);
+        }
 
-        // MODIFIED: Hit our specific backend relational schema rather than checking driveFolderId
         const coursesRes = await fetch(`http://localhost:8080/api/v1/rooms/${roomId}/courses`);
         if (coursesRes.ok) {
           const coursesData = await coursesRes.json();
@@ -73,7 +143,7 @@ function DirectoryViewer({ roomId, userId }: DirectoryViewerProps) {
     if (roomId) {
       fetchRoomAndCourses();
     }
-  }, [roomId]); // CLEANED UP: userId is no longer a dependency for fetching index schemas
+  }, [roomId]); 
 
   const handleAddFolder = async () => {
     if (!newFolderName.trim()) return; 
@@ -112,7 +182,7 @@ function DirectoryViewer({ roomId, userId }: DirectoryViewerProps) {
   if (loading) {
     return (
       <div className="w-full max-w-2xl border border-[#eacf8c] rounded-xl bg-white/15 backdrop-blur-[10px] p-8 shadow-xl text-center">
-        <p className="font-mono text-sm text-[#eacf8c] animate-pulse">Consulting the scroll archives...</p>
+        <p className="text-sm text-[#eacf8c] animate-pulse">Consulting the scroll archives...</p>
       </div>
     );
   }
@@ -120,20 +190,20 @@ function DirectoryViewer({ roomId, userId }: DirectoryViewerProps) {
   if (error) {
     return (
       <div className="w-full max-w-2xl border border-red-400/50 rounded-xl bg-red-950/20 backdrop-blur-[10px] p-6 shadow-xl text-center">
-        <p className="font-mono text-sm text-red-300">⚠️ {error}</p>
+        <p className="text-sm text-red-300">⚠️ {error}</p>
       </div>
     );
   }
 
   return (
-    <div className="relative w-full max-w-2xl border border-[#eacf8c] rounded-xl bg-white/15 backdrop-blur-[10px] p-6 pb-20 shadow-xl text-left mb-6">
+    <div className="relative w-full max-w-4xl border border-[#eacf8c] rounded-xl bg-white/15 backdrop-blur-[10px] p-6 pb-20 shadow-xl text-left mb-6">
       {/* Directory Header */}
       <div className="flex items-center justify-between mb-4 border-b border-[#eacf8c]/30 pb-3">
         <div className="flex items-center gap-3">
-          <h3 className="font-mono text-sm font-bold text-[#eacf8c] tracking-wider uppercase">
+          <h3 className="text-sm font-bold text-[#eacf8c] tracking-wider uppercase">
             {roomDetails?.name ? `Room: ${roomDetails.name}` : "Archives Directory"}
           </h3>
-          <span className="text-[10px] font-mono text-[#CEA864] bg-white/10 px-2 py-0.5 rounded">
+          <span className="text-[10px] text-[#CEA864] bg-white/10 px-2 py-0.5 rounded">
             {folders.length} Folder{folders.length !== 1 ? "s" : ""}
           </span>
         </div>
@@ -163,7 +233,7 @@ function DirectoryViewer({ roomId, userId }: DirectoryViewerProps) {
 
       {/* Directory Contents */}
       {folders.length > 0 ? (
-        <div className="max-h-[300px] overflow-y-auto pr-1">
+        <div className="max-h-[450px] overflow-y-auto pr-1">
           {viewMode === "list" ? (
             /* List View */
             <div className="space-y-2">
@@ -179,12 +249,14 @@ function DirectoryViewer({ roomId, userId }: DirectoryViewerProps) {
                       alt="Folder Icon"
                       className="w-7 h-7 object-contain group-hover:scale-110 transition duration-200"
                     />
-                    <span className="font-mono text-sm text-slate-100 tracking-wide">
+                    <span className="text-sm tracking-wide" style={{ color: "#eac48c" }}>
                       {folder.name}
                     </span>
                   </div>
+                  {/* Action Menu Container: Positioned relative to handle layering properly */}
                   <button
-                    className="opacity-50 hover:opacity-100 hover:scale-105 transition duration-150 p-1.5 rounded bg-white/5 border border-transparent hover:border-[#eacf8c]/25"
+                    className="relative opacity-50 hover:opacity-100 hover:scale-105 transition duration-150 p-1.5 rounded bg-white/5 border border-transparent hover:border-[#eacf8c]/25"
+                    style={{ zIndex: 2 }}
                     title="Folder Action"
                     onClick={(e) => {
                       e.stopPropagation();
@@ -192,9 +264,10 @@ function DirectoryViewer({ roomId, userId }: DirectoryViewerProps) {
                     }}
                   >
                     <img
-                      src="/assets/quill.png"
+                      src="/assets/quillV2.png"
                       alt="Action Quill"
                       className="w-4 h-4 object-contain"
+                      style={{ position: "relative", zIndex: 1 }} /* Layer behind context action interactions */
                     />
                   </button>
                 </div>
@@ -202,7 +275,7 @@ function DirectoryViewer({ roomId, userId }: DirectoryViewerProps) {
             </div>
           ) : (
             /* Grid / Icon View */
-            <div className="grid grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
               {folders.map((folder) => (
                 <div
                   key={folder.id}
@@ -210,7 +283,8 @@ function DirectoryViewer({ roomId, userId }: DirectoryViewerProps) {
                   onClick={() => router.push(`/course_viewer?courseId=${folder.id}`)}
                 >
                   <button
-                    className="absolute top-2 right-2 opacity-50 hover:opacity-100 hover:scale-105 transition duration-150 p-1 rounded"
+                    className="absolute top-2 right-2 opacity-50 hover:opacity-100 hover:scale-105 transition duration-150 p-1"
+                    style={{ zIndex: 2 }}
                     title="Folder Action"
                     onClick={(e) => {
                       e.stopPropagation();
@@ -218,9 +292,10 @@ function DirectoryViewer({ roomId, userId }: DirectoryViewerProps) {
                     }}
                   >
                     <img
-                      src="/assets/quill.png"
+                      src="/assets/quillV2.png"
                       alt="Action Quill"
                       className="w-3.5 h-3.5 object-contain"
+                      style={{ position: "relative", zIndex: 1 }} /* Layer behind context action interactions */
                     />
                   </button>
                   <img
@@ -228,7 +303,7 @@ function DirectoryViewer({ roomId, userId }: DirectoryViewerProps) {
                     alt="Folder Icon"
                     className="w-12 h-12 object-contain mb-2 group-hover:scale-110 transition duration-200"
                   />
-                  <span className="font-mono text-xs text-slate-200 truncate w-full px-1">
+                  <span className="text-xs truncate w-full px-1 group-hover:whitespace-normal group-hover:overflow-visible group-hover:text-clip" style={{ color: "#eac48c" }} title={folder.name}>
                     {folder.name}
                   </span>
                 </div>
@@ -243,7 +318,7 @@ function DirectoryViewer({ roomId, userId }: DirectoryViewerProps) {
             alt="Empty Archives"
             className="w-12 h-12 object-contain mx-auto opacity-60 mb-2"
           />
-          <p className="font-mono text-xs text-[#CEA864]/80">
+          <p className="text-xs text-[#CEA864]/80">
             No chambers or folders are cataloged in this room yet.
           </p>
         </div>
@@ -262,7 +337,7 @@ function DirectoryViewer({ roomId, userId }: DirectoryViewerProps) {
             className="w-11 h-11 object-contain"
           />
         </button>
-        <span className="font-mono text-[10px] text-[#eacf8c] tracking-wide">
+        <span className="text-[10px] text-[#eacf8c] tracking-wide">
           Add Course
         </span>
       </div>
@@ -314,8 +389,14 @@ function DirectoryViewer({ roomId, userId }: DirectoryViewerProps) {
   );
 }
 
+/* ==========================================
+   4. LAYOUT CONTROLLER & TOPBAR CONTAINER
+   ========================================== */
 function RoomViewerContent() {
+  const router = useRouter();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [gemsCount, setGemsCount] = useState(1345); // Set to 1345 like in the mockup
+  const [roomDetails, setRoomDetails] = useState<RoomDetailsType | null>(null);
   const searchParams = useSearchParams();
   const roomId = searchParams.get("roomId");
   const userId = "2deb6920-19b0-4fa9-aa5f-6364b03bce5d"; // Demo static User ID
@@ -324,37 +405,55 @@ function RoomViewerContent() {
     <div className="homepage-container">
       <div className="homepage-overlay" />
       
+      {/* Dynamic TopBar Embedded on Top */}
+      <RoomTopBar 
+        roomCode={roomDetails?.id ? roomDetails.id.slice(0, 4) : "1234"}
+        level={roomDetails?.name || "L2T1"}
+        gems={gemsCount}
+        onBack={() => router.push("/homepage")}
+        onBookClick={() => setIsSidebarOpen(true)}
+      />
+      
       <div 
         className="homepage-content max-w-6xl" 
-        style={{ display: "flex", flexDirection: "column", gap: "25px", alignItems: "center" }}
+        style={{ display: "flex", flexDirection: "column", gap: "25px", alignItems: "center", marginTop: "15px" }}
       >
         {roomId ? (
           <div className="px-6 py-4 w-full flex justify-center">
-            <DirectoryViewer roomId={roomId} userId={userId} />
+            <DirectoryViewer 
+              roomId={roomId} 
+              userId={userId} 
+              onRoomDetailsFetched={(details) => setRoomDetails(details)}
+            />
           </div>
         ) : (
           <div className="w-full max-w-6xl border border-[#eacf8c]/40 rounded-xl bg-white/10 backdrop-blur-[10px] p-8 shadow-xl text-center">
-            <p className="font-mono text-sm text-[#CEA864]">
+            <p className="text-sm text-[#CEA864]">
               No room is currently selected. Return to the homepage to select one.
             </p>
           </div>
         )}
       </div>
 
-      {/* Floating Gear/Map Trigger Button at the top right corner */}
-      <button className="sidebar-trigger-btn" onClick={() => setIsSidebarOpen(true)}>
-        <img src="/assets/map.png" alt="Open Menu" />
-      </button>
-
       {/* Sidebar Component */}
       <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
+
+      {/* Enforce strict global typography alignment overrides */}
+      <style jsx global>{`
+        * {
+          font-family: 'Press Start 2P', monospace !important;
+        }
+      `}</style>
     </div>
   );
 }
 
+/* ==========================================
+   5. EXPORT PAGE WRAPPER
+   ========================================== */
 export default function RoomViewerPage() {
   return (
-    <Suspense fallback={<div>Loading Room Viewer...</div>}>
+    <Suspense fallback={<div style={{ fontFamily: "'Press Start 2P', monospace", padding: "20px" }}>Loading Room Viewer...</div>}>
       <RoomViewerContent />
     </Suspense>
   );

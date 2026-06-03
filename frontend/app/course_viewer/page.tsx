@@ -1,22 +1,11 @@
 "use client";
 
-// 1. FIXED: Imported Suspense from React, and useSearchParams from NextJS navigation
 import React, { useState, useEffect, Suspense } from "react";
-import { useSearchParams } from "next/navigation";
-
-// Optional Placeholder: If you don't have a separate Sidebar file imported, 
-// here is a quick placeholder structure so your build passes.
-function Sidebar({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
-  if (!isOpen) return null;
-  return (
-    <div className="fixed inset-0 z-50 flex justify-end bg-black/40" onClick={onClose}>
-      <div className="w-80 h-full bg-slate-900 border-l border-[#eacf8c] p-6 text-slate-200" onClick={(e) => e.stopPropagation()}>
-        <h3 className="font-mono text-sm font-bold text-[#eacf8c] mb-4">NAVIGATION MAP</h3>
-        <button className="text-xs text-[#eacf8c] underline" onClick={onClose}>Close Map</button>
-      </div>
-    </div>
-  );
-}
+import { useSearchParams, useRouter } from "next/navigation";
+import Sidebar from "../components/Sidebar";
+import CourseTopBar from "../components/CourseTopBar";
+import "../auth_init/auth.css";
+import "../homepage/homepage.css";
 
 interface FolderType {
   id: string;
@@ -35,9 +24,10 @@ interface FileType {
 interface CourseViewerContentProps {
   courseId: string;
   userId: string;
+  onCourseDetailsFetched?: (name: string, semesterId: string) => void;
 }
 
-export function CourseViewerContent({ courseId, userId }: CourseViewerContentProps) {
+export function CourseViewerContent({ courseId, userId, onCourseDetailsFetched }: CourseViewerContentProps) {
   // 1. Maintain the tracking ID for the directory we are currently looking at
   const [currentFolderId, setCurrentFolderId] = useState<string | null>(null);
   // 2. Explicitly track what the "root" folder ID is for this course session
@@ -78,6 +68,9 @@ export function CourseViewerContent({ courseId, userId }: CourseViewerContentPro
           setRootFolderId(courseData.rootFolderId);
           setCurrentFolderId(courseData.rootFolderId);
           setHistory([]);
+          if (onCourseDetailsFetched) {
+            onCourseDetailsFetched(courseData.name, courseData.semesterId);
+          }
         } else {
           throw new Error("This course does not have a root folder mapped in the database archives.");
         }
@@ -123,7 +116,9 @@ export function CourseViewerContent({ courseId, userId }: CourseViewerContentPro
   };
 
   useEffect(() => {
-    fetchFoldersAndFiles();
+    if (currentFolderId && userId) {
+      fetchFoldersAndFiles();
+    }
   }, [currentFolderId, userId]);
 
   const handleFolderClick = (folderId: string) => {
@@ -145,7 +140,6 @@ export function CourseViewerContent({ courseId, userId }: CourseViewerContentPro
     if (!newFolderName.trim()) return;
     setProcessing(true);
     try {
-      // FIXED: Routed to /api/v1/directory/folders to connect directly to the API Controller we built
       const res = await fetch(
         `http://localhost:8080/api/v1/directory/folders?userId=${userId}&folderName=${encodeURIComponent(
           newFolderName.trim()
@@ -228,7 +222,7 @@ export function CourseViewerContent({ courseId, userId }: CourseViewerContentPro
   }
 
   return (
-    <div className="relative w-full max-w-2xl border border-[#eacf8c] rounded-xl bg-white/15 backdrop-blur-[10px] p-6 pb-20 shadow-xl text-left mb-6">
+    <div className="relative w-full max-w-4xl border border-[#eacf8c] rounded-xl bg-white/15 backdrop-blur-[10px] p-6 pb-20 shadow-xl text-left mb-6">
       {/* Header */}
       <div className="flex items-center justify-between mb-4 border-b border-[#eacf8c]/30 pb-3">
         <div className="flex items-center gap-3">
@@ -275,7 +269,7 @@ export function CourseViewerContent({ courseId, userId }: CourseViewerContentPro
 
       {/* Folders and Files list */}
       {(folders.length > 0 || files.length > 0) ? (
-        <div className="max-h-[300px] overflow-y-auto pr-1">
+        <div className="max-h-[450px] overflow-y-auto pr-1">
           {viewMode === "list" ? (
             /* LIST VIEW */
             <div className="space-y-2">
@@ -291,7 +285,7 @@ export function CourseViewerContent({ courseId, userId }: CourseViewerContentPro
                       alt="Folder Icon"
                       className="w-7 h-7 object-contain"
                     />
-                    <span className="font-mono text-sm text-slate-100 tracking-wide">
+                    <span className="font-mono text-sm tracking-wide" style={{ color: "#eac48c" }}>
                       {folder.name}
                     </span>
                   </div>
@@ -303,7 +297,7 @@ export function CourseViewerContent({ courseId, userId }: CourseViewerContentPro
                     }}
                   >
                     <img
-                      src="/assets/quill.png"
+                      src="/assets/quillV2.png"
                       alt="Action Menu"
                       className="w-4 h-4 object-contain"
                     />
@@ -323,7 +317,7 @@ export function CourseViewerContent({ courseId, userId }: CourseViewerContentPro
                       alt="File Icon"
                       className="w-7 h-7 object-contain"
                     />
-                    <span className="font-mono text-sm text-slate-100 tracking-wide">
+                    <span className="font-mono text-sm tracking-wide" style={{ color: "#eac48c" }}>
                       {file.name}
                     </span>
                   </div>
@@ -335,7 +329,7 @@ export function CourseViewerContent({ courseId, userId }: CourseViewerContentPro
                     }}
                   >
                     <img
-                      src="/assets/quill.png"
+                      src="/assets/quillV2.png"
                       alt="Action Menu"
                       className="w-4 h-4 object-contain"
                     />
@@ -345,7 +339,7 @@ export function CourseViewerContent({ courseId, userId }: CourseViewerContentPro
             </div>
           ) : (
             /* GRID VIEW */
-            <div className="grid grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
               {folders.map((folder) => (
                 <div
                   key={folder.id}
@@ -360,7 +354,7 @@ export function CourseViewerContent({ courseId, userId }: CourseViewerContentPro
                     }}
                   >
                     <img
-                      src="/assets/quill.png"
+                      src="/assets/quillV2.png"
                       alt="Action Menu"
                       className="w-3.5 h-3.5 object-contain"
                     />
@@ -370,7 +364,7 @@ export function CourseViewerContent({ courseId, userId }: CourseViewerContentPro
                     alt="Folder Icon"
                     className="w-12 h-12 object-contain mb-2 group-hover:scale-110 transition duration-200"
                   />
-                  <span className="font-mono text-xs text-slate-200 truncate w-full px-1">
+                  <span className="font-mono text-xs truncate w-full px-1 group-hover:whitespace-normal group-hover:overflow-visible group-hover:text-clip" style={{ color: "#eac48c" }} title={folder.name}>
                     {folder.name}
                   </span>
                 </div>
@@ -390,7 +384,7 @@ export function CourseViewerContent({ courseId, userId }: CourseViewerContentPro
                     }}
                   >
                     <img
-                      src="/assets/quill.png"
+                      src="/assets/quillV2.png"
                       alt="Action Menu"
                       className="w-3.5 h-3.5 object-contain"
                     />
@@ -400,7 +394,7 @@ export function CourseViewerContent({ courseId, userId }: CourseViewerContentPro
                     alt="File Icon"
                     className="w-12 h-12 object-contain mb-2 group-hover:scale-110 transition duration-200"
                   />
-                  <span className="font-mono text-xs text-slate-200 truncate w-full px-1">
+                  <span className="font-mono text-xs truncate w-full px-1 group-hover:whitespace-normal group-hover:overflow-visible group-hover:text-clip" style={{ color: "#eac48c" }} title={file.name}>
                     {file.name}
                   </span>
                 </div>
@@ -446,7 +440,7 @@ export function CourseViewerContent({ courseId, userId }: CourseViewerContentPro
           </div>
         )}
         <button
-          className="hover:scale-110 active:scale-95 transition duration-150 cursor-pointer shadow-lg rounded-full bg-slate-900 border border-[#eacf8c] p-1"
+          className="hover:scale-110 active:scale-95 transition duration-150 cursor-pointer shadow-lg"
           title="Add More Options"
           onClick={() => setShowAddMenu((prev) => !prev)}
         >
@@ -517,12 +511,12 @@ export function CourseViewerContent({ courseId, userId }: CourseViewerContentPro
                     disabled={processing}
                   />
                   {selectedFile ? (
-                    <div className="space-y-1">
-                      <p className="font-mono text-xs text-[#eacf8c] font-bold truncate max-w-xs">{selectedFile.name}</p>
+                    <div className="space-y-1 border rounded-sm p-3">
+                      <p className="font-mono text-xs text-[#1a0f05] font-bold truncate max-w-xs">{selectedFile.name}</p>
                       <p className="text-[10px] text-slate-500 font-mono">{(selectedFile.size / 1024).toFixed(1)} KB</p>
                     </div>
                   ) : (
-                    <div className="space-y-1">
+                    <div className="space-y-1 border rounded-sm p-3">
                       <span className="text-2xl">📖</span>
                       <p className="font-mono text-xs text-[#CEA864]">Click to pick local file</p>
                     </div>
@@ -557,33 +551,57 @@ export function CourseViewerContent({ courseId, userId }: CourseViewerContentPro
 }
 
 function CourseFolderViewerSuspended() {
+  const router = useRouter();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [gemsCount, setGemsCount] = useState(1345);
+  const [courseName, setCourseName] = useState("Course");
+  const [semesterId, setSemesterId] = useState<string | null>(null);
+  
   const searchParams = useSearchParams();
   const courseId = searchParams.get("courseId");
-  const userId = "2deb6920-19b0-4fa9-aa5f-6364b03bce5d"; // Demo static User ID
+  
+  const [userId, setUserId] = useState<string>("2deb6920-19b0-4fa9-aa5f-6364b03bce5d"); // Default static User ID
+
+  useEffect(() => {
+    const id = localStorage.getItem("user_id");
+    if (id) {
+      setUserId(id);
+    }
+  }, []);
 
   return (
     <div className="homepage-container">
       <div className="homepage-overlay" />
 
+      {/* Dynamic CourseTopBar */}
+      <CourseTopBar
+        courseName={courseName}
+        level={semesterId ? "Room" : "Back"}
+        gems={gemsCount}
+        onBack={() => {
+          if (semesterId) {
+            router.push(`/room_viewer?roomId=${semesterId}`);
+          } else {
+            router.push("/homepage");
+          }
+        }}
+        onBookClick={() => setIsSidebarOpen(true)}
+      />
+
       <div
         className="homepage-content"
-        style={{ display: "flex", flexDirection: "column", gap: "25px", alignItems: "center" }}
+        style={{ display: "flex", flexDirection: "column", gap: "25px", alignItems: "center", marginTop: "15px" }}
       >
-        <h1
-          className="runekeeper-title"
-          style={{ fontSize: "28px", color: "#323921", textShadow: "3px 3px 0 #CEA864, -3px -3px 0 #CEA864, 3px -3px 0 #CEA864, -3px 3px 0 #CEA864" }}
-        >
-          Course Folder Viewer
-        </h1>
-
-        <p style={{ fontFamily: "'Press Start 2P', monospace", fontSize: "14px", color: "#E8C493", textShadow: "2px 2px 0 #000", textAlign: "center", maxWidth: "600px" }}>
-          Welcome to the Course Folder Viewer. Navigate files, check schedules, and consult your events.
-        </p>
-
         {courseId ? (
           <div className="px-6 py-4 w-full flex justify-center">
-            <CourseViewerContent courseId={courseId} userId={userId} />
+            <CourseViewerContent 
+              courseId={courseId} 
+              userId={userId} 
+              onCourseDetailsFetched={(name, semId) => {
+                setCourseName(name);
+                setSemesterId(semId);
+              }}
+            />
           </div>
         ) : (
           <div className="w-full max-w-2xl border border-[#eacf8c]/40 rounded-xl bg-white/10 backdrop-blur-[10px] p-8 shadow-xl text-center">
@@ -592,21 +610,17 @@ function CourseFolderViewerSuspended() {
             </p>
           </div>
         )}
-
-        <div className="rpg-wood-btn-wrap" style={{ marginTop: "10px" }}>
-          <button className="rpg-wood-btn" onClick={() => setIsSidebarOpen(true)}>
-            Open Sidebar
-          </button>
-        </div>
       </div>
-
-      {/* Floating Trigger */}
-      <button className="sidebar-trigger-btn" onClick={() => setIsSidebarOpen(true)}>
-        <img src="/assets/map.png" alt="Open Menu" />
-      </button>
 
       {/* Sidebar Component */}
       <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
+
+      {/* Enforce strict global typography alignment overrides */}
+      <style jsx global>{`
+        * {
+          font-family: 'Press Start 2P', monospace !important;
+        }
+      `}</style>
     </div>
   );
 }
