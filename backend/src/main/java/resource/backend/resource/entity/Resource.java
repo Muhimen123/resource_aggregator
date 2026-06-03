@@ -36,7 +36,7 @@ public class Resource extends BaseEntity {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "resource_type", nullable = false)
-    private ResourceType resourceType = ResourceType.OTHER;
+    private ResourceType resourceType = ResourceType.other;
 
     @Column(name = "drive_file_id", nullable = false, unique = true)
     private String driveFileId;
