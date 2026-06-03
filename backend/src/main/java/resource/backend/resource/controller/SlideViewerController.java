@@ -49,6 +49,23 @@ public class SlideViewerController {
     }
 
     /**
+     * Fetches metadata for a resource document, such as the total number of pages.
+     *
+     * @param resourceId The UUID of the resource
+     * @return Metadata object containing total pages
+     */
+    @GetMapping(value = "/{resourceId}/metadata", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<SlideViewerService.DocumentMetadata> getResourceMetadata(
+            @PathVariable UUID resourceId) {
+        
+        log.info("Request received to fetch metadata for resource {}", resourceId);
+        
+        SlideViewerService.DocumentMetadata metadata = slideViewerService.getDocumentMetadata(resourceId);
+        
+        return ResponseEntity.ok(metadata);
+    }
+
+    /**
      * Updates the user's current slide progress percentage in the database.
      *
      * @param resourceId The UUID of the slide resource

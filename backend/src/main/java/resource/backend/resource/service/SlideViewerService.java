@@ -9,7 +9,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.server.ResponseStatusException;
 import resource.backend.resource.entity.Resource;
+import resource.backend.resource.entity.ResourceType;
 import resource.backend.resource.repository.ResourceRepository;
+import resource.backend.gdrive.service.GoogleDriveService;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -27,6 +29,7 @@ public class SlideViewerService {
 
     private final ResourceRepository resourceRepository;
     private final RestClient restClient = RestClient.create();
+    private final GoogleDriveService googleDriveService;
 
     /**
      * Renders a specific slide page to raw PNG bytes.
@@ -43,32 +46,78 @@ public class SlideViewerService {
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.NOT_FOUND, "Slide resource not found with ID: " + resourceId));
 
-        // 2. Download the original slide document (PDF/PPTX) from the storage URL
-        byte[] fileBytes = downloadFile(resource.getDriveUrl());
+        // 2. Download the original slide document (PDF/PPTX) from Google Drive
+        byte[] fileBytes = downloadFile(resource);
 
         // 3. Render the specific page to PNG using GroupDocs.Viewer
         return convertPageToPng(fileBytes, pageNumber);
     }
 
     /**
-     * Downloads a file as raw bytes from the given URL.
+     * Retrieves metadata about the document (e.g., total number of pages).
      */
-    private byte[] downloadFile(String fileUrl) {
-        try {
-            log.info("Downloading slide file from: {}", fileUrl);
-            byte[] bytes = restClient.get()
-                    .uri(fileUrl)
-                    .retrieve()
-                    .body(byte[].class);
+    public DocumentMetadata getDocumentMetadata(UUID resourceId) {
+        log.info("Fetching document metadata for resource {}", resourceId);
+        
+        Resource resource = resourceRepository.findById(resourceId)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND, "Slide resource not found with ID: " + resourceId));
 
-            if (bytes == null || bytes.length == 0) {
-                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Downloaded file is empty");
+        ResourceType type = resource.getResourceType();
+        String driveUrl = resource.getDriveUrl();
+
+        if (type == ResourceType.video || type == ResourceType.audio) {
+            return new DocumentMetadata(1, type.name(), driveUrl);
+        }
+
+        byte[] fileBytes = downloadFile(resource);
+
+        try (InputStream inputStream = new ByteArrayInputStream(fileBytes)) {
+            try (Viewer viewer = new Viewer(inputStream)) {
+                com.groupdocs.viewer.options.ViewInfoOptions viewInfoOptions = com.groupdocs.viewer.options.ViewInfoOptions.forPngView(false);
+                com.groupdocs.viewer.results.ViewInfo viewInfo = viewer.getViewInfo(viewInfoOptions);
+                int totalPages = viewInfo.getPages().size();
+                return new DocumentMetadata(totalPages, type.name(), null);
+            }
+        } catch (Exception e) {
+            log.error("Failed to get document metadata", e);
+            throw new ResponseStatusException(
+                    HttpStatus.INTERNAL_SERVER_ERROR, "Error getting document info: " + e.getMessage(), e);
+        }
+    }
+
+    public record DocumentMetadata(int totalPages, String resourceType, String mediaUrl) {}
+
+    /**
+     * Downloads the resource's original document from the owner's Google Drive
+     * using their stored OAuth access/refresh tokens.
+     *
+     * Requires:
+     *   - resource.getOwner().getId() matches a row in user_google_tokens
+     *   - resource.getDriveFileId() is a valid Google Drive file ID
+     */
+    private byte[] downloadFile(Resource resource) {
+        try {
+            String userId = resource.getOwner().getId().toString();
+            String fileId = resource.getDriveFileId();
+
+            log.info("Downloading file {} from Google Drive for user {}", fileId, userId);
+
+            com.google.api.services.drive.Drive drive = googleDriveService.getDriveService(userId);
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+            drive.files().get(fileId).executeMediaAndDownloadTo(outputStream);
+
+            byte[] bytes = outputStream.toByteArray();
+            if (bytes.length == 0) {
+                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Downloaded file from Google Drive is empty");
             }
             return bytes;
+        } catch (ResponseStatusException e) {
+            throw e;
         } catch (Exception e) {
-            log.error("Failed to download file from storage URL: {}", fileUrl, e);
+            log.error("Failed to download file from Google Drive for resource {}", resource.getId(), e);
             throw new ResponseStatusException(
-                    HttpStatus.BAD_GATEWAY, "Could not fetch slide file from storage server.", e);
+                    HttpStatus.INTERNAL_SERVER_ERROR, "Failed to download the document from Google Drive: " + e.getMessage());
         }
     }
 

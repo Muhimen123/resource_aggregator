@@ -8,6 +8,14 @@ const nextConfig: NextConfig = {
     /* Allow Next Image optimisation for local assets */
     unoptimized: false,
   },
+  async rewrites() {
+    return [
+      {
+        source: '/api/:path*',
+        destination: 'http://localhost:8081/api/v1/api/:path*',
+      },
+    ];
+  },
 };
 
 export default nextConfig;

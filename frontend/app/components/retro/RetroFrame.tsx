@@ -34,9 +34,9 @@ export default function RetroFrame({
         </div>
       )}
 
-      {/* Scrollable body for slides / PDF content */}
+      {/* Body — overflow-hidden so inner viewer owns scrolling */}
       <div
-        className="relative w-full flex-1 p-6 overflow-y-auto"
+        className="relative w-full flex-1 overflow-hidden"
         style={{ minHeight: 0 }}
       >
         {children}

@@ -1,17 +1,41 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import ProgressHeader from "../components/retro/ProgressHeader";
 import TabNavigation from "../components/retro/TabNavigation";
 import RetroFrame from "../components/retro/RetroFrame";
+import DocumentViewer from "../components/retro/DocumentViewer";
 
 const TABS = [
   { id: "suggestion", label: "Suggestion" },
   { id: "ct1", label: "CT1" },
 ];
 
-export default function ContentViewerPage() {
+function ContentViewerPageContent() {
+  const searchParams = useSearchParams();
+  const resourceId = searchParams.get("resourceId");
+
   const [activeTab, setActiveTab] = useState("suggestion");
+  const [isLoading, setIsLoading] = useState(false);
+  const [metadata, setMetadata] = useState<{ totalPages: number } | null>(null);
+  const [progress, setProgress] = useState(0);
+
+  useEffect(() => {
+    if (resourceId) {
+      setIsLoading(true);
+      fetch(`/api/resources/${resourceId}/metadata`)
+        .then(res => res.json())
+        .then(data => {
+          setMetadata(data);
+          setIsLoading(false);
+        })
+        .catch(err => {
+          console.error("Failed to fetch metadata", err);
+          setIsLoading(false);
+        });
+    }
+  }, [resourceId]);
 
   return (
     <main
@@ -35,7 +59,7 @@ export default function ContentViewerPage() {
         style={{ padding: "16px 48px 24px" }}
       >
         {/* Progress Header — compact row at the top */}
-        <ProgressHeader progressValue={70} likeCount={102} />
+        <ProgressHeader progressValue={progress} likeCount={102} />
 
         {/* Glass frame fills the remaining viewport height */}
         <RetroFrame
@@ -49,34 +73,65 @@ export default function ContentViewerPage() {
             />
           }
         >
-          {/* Placeholder — replace with slide/PDF viewer later */}
-          <div className="flex flex-col items-center justify-center h-full select-none">
-            <h3
-              style={{
-                fontFamily: "'Press Start 2P', monospace",
-                fontSize: "18px",
-                color: "#EAD09D",
-                letterSpacing: "0.1em",
-                textTransform: "uppercase",
-                marginBottom: "12px",
-              }}
-            >
-              {activeTab === "suggestion" ? "Suggestion Content" : "CT1 Content"}
-            </h3>
-            <p
-              style={{
-                fontFamily: "'Press Start 2P', monospace",
-                fontSize: "14px",
-                color: "#8a8a8a",
-              }}
-            >
-              {activeTab === "suggestion"
-                ? "Awaiting suggestion data..."
-                : "Awaiting CT1 data..."}
-            </p>
-          </div>
+          {/* Document Viewer Content */}
+          {activeTab === "suggestion" ? (
+            <div className="absolute inset-0">
+              {isLoading ? (
+                <div className="flex flex-col items-center justify-center h-full">
+                  <p className="press-start-font text-sm text-[#8a8a8a]">Loading document...</p>
+                </div>
+              ) : resourceId && metadata ? (
+                <DocumentViewer
+                  resourceId={resourceId}
+                  totalPages={metadata.totalPages}
+                  initialProgress={progress}
+                  resourceType={(metadata as any).resourceType}
+                  mediaUrl={(metadata as any).mediaUrl}
+                  onProgressUpdate={setProgress}
+                />
+              ) : (
+                <div className="flex flex-col items-center justify-center h-full">
+                  <p className="press-start-font text-sm text-[#8a8a8a]">
+                    No resource specified. Add ?resourceId=UUID to the URL.
+                  </p>
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="flex flex-col items-center justify-center h-full select-none">
+              <h3
+                style={{
+                  fontFamily: "'Press Start 2P', monospace",
+                  fontSize: "18px",
+                  color: "#EAD09D",
+                  letterSpacing: "0.1em",
+                  textTransform: "uppercase",
+                  marginBottom: "12px",
+                }}
+              >
+                CT1 Content
+              </h3>
+              <p
+                style={{
+                  fontFamily: "'Press Start 2P', monospace",
+                  fontSize: "14px",
+                  color: "#8a8a8a",
+                }}
+              >
+                Awaiting CT1 data...
+              </p>
+            </div>
+          )}
         </RetroFrame>
       </div>
     </main>
+  );
+}
+
+export default function ContentViewerPage() {
+  return (
+    <Suspense fallback={<div className="w-full h-screen bg-[#0F0F0F]" />}>
+      <ContentViewerPageContent />
+    </Suspense>
   );
 }
